@@ -46,13 +46,16 @@
                                     <span class="badge bg-warning text-dark">{{ $order->status }}</span>
                                 @endif
                             </td>
-                            <td class="text-end pe-4">
+                            <td class="text-end">
                                 @if($order->status == 'Dibayar')
-                                    <button class="btn btn-primary btn-sm fw-bold" onclick="inputResi({{ $order->id }})">
+                                    <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#shipModal{{ $order->id }}">
                                         <i class="bi bi-truck"></i> Input Resi
                                     </button>
-                                @else
-                                    <button class="btn btn-outline-secondary btn-sm" disabled>Detail</button>
+                                    
+                                    @else
+                                    <a href="{{ route('seller.orders.show', $order->id) }}" class="btn btn-outline-secondary btn-sm">
+                                        Detail
+                                    </a>
                                 @endif
                             </td>
                         </tr>

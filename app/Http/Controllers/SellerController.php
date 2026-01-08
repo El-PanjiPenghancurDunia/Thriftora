@@ -50,4 +50,18 @@ class SellerController extends Controller
 
         return redirect()->back()->with('success', 'Resi berhasil diinput! Pesanan berubah menjadi DIKIRIM.');
     }
+    // Tambahkan method ini di dalam class SellerController
+
+public function showOrder($id)
+{
+    // Ambil transaksi beserta data pembeli (user) dan produk
+    $trx = \App\Models\Transaction::with(['user', 'product'])->findOrFail($id);
+
+    // Keamanan: Pastikan produk yang dibeli adalah milik penjual yang sedang login
+    if ($trx->product->user_id != Auth::id()) {
+        abort(403, 'Pesanan ini bukan milik toko Anda.');
+    }
+
+    return view('seller.orders.show', compact('trx'));
+}
 }

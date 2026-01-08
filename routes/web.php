@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:penjual'])->group(function () {
     Route::resource('seller/products', SellerProductController::class)->names('seller.products');
     Route::get('/seller/orders', [SellerController::class, 'orders'])->name('seller.orders');
     Route::post('/seller/orders/{id}/ship', [SellerController::class, 'shipOrder'])->name('seller.orders.ship');
+    Route::get('/seller/orders/{id}', [SellerController::class, 'showOrder'])->name('seller.orders.show');
 });
 
 // --- GRUP ROUTE ADMIN ---
