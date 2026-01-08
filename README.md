@@ -10,8 +10,8 @@ Project ini dikembangkan sebagai tugas besar mata kuliah **Rekayasa Perangkat Lu
 | NIM | Nama | Role |
 | :--- | :--- | :--- |
 | **A11.2023.15423** | Panji Kusumo | *Project Manager & Lead Dev* |
-| **A11.2023.15428** | Humam Wajdi Manaf | *System Analyst* |
-| **A11.2023.15414** | Pramudya Putra Pratama | *UI/UX Designer* |
+| **A11.2023.15428** | Humam Wajdi Manaf | *UI/UX Designer* |
+| **A11.2023.15414** | Pramudya Putra Pratama | *System Analyst* |
 | **A11.2023.15406** | Agil Rahman | *Database Administrator* |
 | **A11.2023.15429** | Kin Rajasa Abdi Bawana | *Quality Assurance* |
 
