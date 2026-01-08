@@ -56,29 +56,55 @@
             </div>
         </div>
 
-        <div class="col-md-5">
-            <div class="card bg-dark text-white border-secondary shadow-lg">
-                <div class="card-body p-4">
-                    <h5 class="text-warning fw-bold">Ringkasan Biaya</h5>
-                    <hr class="border-secondary">
-                    @php $totalBarang = $carts->sum(function($item){ return $item->product->harga; }); @endphp
-                    
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-secondary">Total Barang</span>
-                        <strong>Rp {{ number_format($totalBarang) }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-secondary">Ongkir</span>
-                        <strong id="ongkirDisplay" class="text-info">Rp 0</strong>
-                    </div>
-                    <hr class="border-secondary">
-                    <div class="d-flex justify-content-between">
-                        <span class="h5 mb-0">Total Bayar</span>
-                        <strong class="h4 text-warning mb-0" id="grandTotal">Rp {{ number_format($totalBarang) }}</strong>
-                    </div>
-                </div>
-            </div>
+        <div class="col-md-4">
+    <div class="card bg-dark text-white border-secondary shadow-lg position-sticky" style="top: 100px;">
+        <div class="card-header border-secondary bg-secondary bg-opacity-10 py-3">
+            <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-receipt"></i> Ringkasan Belanja</h5>
         </div>
+        <div class="card-body p-4">
+            
+            <div class="mb-3">
+                <small class="text-secondary fw-bold text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">Item Dibeli</small>
+                <ul class="list-group list-group-flush mt-2">
+                    @foreach($carts as $item)
+                    <li class="list-group-item bg-transparent text-white border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ asset('storage/' . $item->product->gambar) }}" class="rounded me-2 border border-secondary" width="40" height="40" style="object-fit: cover;">
+                            <div style="line-height: 1.2;">
+                                <span class="d-block text-truncate" style="max-width: 130px;">{{ $item->product->nama_produk }}</span>
+                                <small class="text-secondary">{{ $item->quantity }} x Rp {{ number_format($item->product->harga) }}</small>
+                            </div>
+                        </div>
+                        <span class="fw-bold">Rp {{ number_format($item->product->harga * $item->quantity) }}</span>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            <hr class="border-secondary border-2 border-dashed my-3">
+
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-secondary">Subtotal Barang</span>
+                <span class="fw-bold">Rp {{ number_format($carts->sum(fn($i) => $i->product->harga * $i->quantity)) }}</span>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-secondary">Ongkos Kirim</span>
+                <span class="fw-bold text-warning" id="ongkir_display">Rp 0</span>
+            </div>
+
+            <hr class="border-secondary my-3">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="fs-5">Total Bayar</span>
+                <span class="fs-4 fw-bold text-warning" id="total_bayar_display">
+                    Rp {{ number_format($carts->sum(fn($i) => $i->product->harga * $i->quantity)) }}
+                </span>
+            </div>
+
+            </div>
+    </div>
+</div>
     </div>
 </div>
 <style>
@@ -88,7 +114,8 @@
 </style>
 
 <script>
-    const totalBarang = {{ $totalBarang }};
+    // PERBAIKAN 1: Hitung total langsung dari data $carts
+    const totalBarang = {{ $carts->sum(fn($i) => $i->product->harga * $i->quantity) }};
 
     function cekOngkirPalsu() {
         const courier = document.getElementById('courier').value;
@@ -123,8 +150,15 @@
         const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
         const hargaOngkir = parseInt(selectedOption.getAttribute('data-harga')) || 0;
 
-        document.getElementById('ongkirDisplay').innerText = 'Rp ' + hargaOngkir.toLocaleString();
-        document.getElementById('grandTotal').innerText = 'Rp ' + (totalBarang + hargaOngkir).toLocaleString();
+        // PERBAIKAN 2: Sesuaikan ID dengan HTML yang Anda buat di atas
+        // ID di HTML adalah 'ongkir_display' dan 'total_bayar_display'
+        document.getElementById('ongkir_display').innerText = 'Rp ' + hargaOngkir.toLocaleString();
+        
+        // Update Total Bayar (Barang + Ongkir)
+        const grandTotal = totalBarang + hargaOngkir;
+        document.getElementById('total_bayar_display').innerText = 'Rp ' + grandTotal.toLocaleString();
+        
+        // Masukkan ke input hidden agar terkirim ke database
         document.getElementById('shipping_cost_input').value = hargaOngkir;
     }
 </script>
