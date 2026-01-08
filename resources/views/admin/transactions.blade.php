@@ -48,6 +48,11 @@
                                     <span class="badge bg-info text-dark">Paid</span>
                                 @elseif($trx->status == 'Dikirim')
                                     <span class="badge bg-success">Shipped</span>
+                                @elseif($trx->status == 'Selesai')
+                                    <span class="badge bg-success">Selesai</span>
+                                @else
+                                    {{-- Jaga-jaga jika ada status lain, tampilkan teks aslinya --}}
+                                    <span class="badge bg-dark">{{ $trx->status }}</span>
                                 @endif
                             </td>
                         </tr>
