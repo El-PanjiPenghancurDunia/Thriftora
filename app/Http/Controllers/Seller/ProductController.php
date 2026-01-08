@@ -27,37 +27,36 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_produk' => 'required',
-            'harga' => 'required|numeric',
-            'gambar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'nama_produk' => 'required|string|max:255',
+            'harga'       => 'required|numeric|min:0',
+            'stok'        => 'required|numeric|min:1', // Penjual bisa menentukan stok awal
+            'gambar'      => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $imagePath = $request->file('gambar')->store('products', 'public');
 
         Product::create([
-            'user_id' => Auth::id(),
+            'user_id'     => Auth::id(),
             'nama_produk' => $request->nama_produk,
-            'harga' => $request->harga,
-            'ukuran' => $request->ukuran,
-            'kondisi' => $request->kondisi,
-            'deskripsi' => $request->deskripsi,
-            'gambar' => $imagePath,
-            'stok' => 1 // Default Thrift
+            'harga'       => $request->harga,
+            'stok'        => $request->stok, // Menggunakan input stok dari form
+            'ukuran'      => $request->ukuran,
+            'kondisi'     => $request->kondisi,
+            'deskripsi'   => $request->deskripsi,
+            'gambar'      => $imagePath,
         ]);
 
-        return redirect()->route('seller.products.index')->with('success', 'Produk berhasil dijual!');
+        return redirect()->route('seller.products.index')->with('success', 'Produk berhasil ditambahkan ke etalase!');
     }
 
-    // --- FUNGSI BARU UNTUK EDIT & HAPUS ---
-
-    // 4. Tampilkan Form Edit (Ambil data lama)
+    // 4. Tampilkan Form Edit
     public function edit($id)
     {
         $product = Product::findOrFail($id);
 
         // Keamanan: Pastikan yg edit adalah pemilik barang
         if($product->user_id != Auth::id()) {
-            abort(403);
+            abort(403, 'Anda tidak memiliki akses ke produk ini.');
         }
 
         return view('seller.products.edit', compact('product'));
@@ -68,36 +67,40 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        if($product->user_id != Auth::id()) { abort(403); }
+        if($product->user_id != Auth::id()) { 
+            abort(403); 
+        }
 
         $request->validate([
-            'nama_produk' => 'required',
-            'harga' => 'required|numeric',
-            'gambar' => 'nullable|image|max:2048', // Gambar boleh kosong kalau gak mau ganti
+            'nama_produk' => 'required|string|max:255',
+            'harga'       => 'required|numeric|min:0',
+            'stok'        => 'required|numeric|min:0', // Stok boleh 0 (habis)
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        // Siapkan data untuk diupdate
+        $data = [
+            'nama_produk' => $request->nama_produk,
+            'harga'       => $request->harga,
+            'stok'        => $request->stok, // Update stok dari form
+            'ukuran'      => $request->ukuran,
+            'kondisi'     => $request->kondisi,
+            'deskripsi'   => $request->deskripsi,
+        ];
 
         // Cek jika user upload gambar baru
         if ($request->hasFile('gambar')) {
-            // Hapus gambar lama biar server gak penuh
+            // Hapus gambar lama
             if($product->gambar) {
                 Storage::delete('public/' . $product->gambar);
             }
             // Simpan gambar baru
-            $imagePath = $request->file('gambar')->store('products', 'public');
-            $product->gambar = $imagePath;
+            $data['gambar'] = $request->file('gambar')->store('products', 'public');
         }
 
-        // Update data lainnya
-        $product->update([
-            'nama_produk' => $request->nama_produk,
-            'harga' => $request->harga,
-            'ukuran' => $request->ukuran,
-            'kondisi' => $request->kondisi,
-            'deskripsi' => $request->deskripsi,
-            // gambar sudah dihandle di atas
-        ]);
+        $product->update($data);
 
-        return redirect()->route('seller.products.index')->with('success', 'Produk berhasil diperbarui!');
+        return redirect()->route('seller.products.index')->with('success', 'Produk dan Stok berhasil diperbarui!');
     }
 
     // 6. Proses Hapus
@@ -105,9 +108,10 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        if($product->user_id != Auth::id()) { abort(403); }
+        if($product->user_id != Auth::id()) { 
+            abort(403); 
+        }
 
-        // Hapus file gambar dari penyimpanan
         if($product->gambar) {
             Storage::delete('public/' . $product->gambar);
         }

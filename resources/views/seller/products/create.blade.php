@@ -22,6 +22,10 @@
                                 <label class="form-label text-secondary">Harga (Rp)</label>
                                 <input type="number" name="harga" class="form-control text-white" required style="background-color: #2b3035; border: 1px solid #495057;">
                             </div>
+                            <div class="mb-3">
+                                <label class="text-secondary">Jumlah Stok</label>
+                                <input type="number" name="stok" class="form-control text-white" value="1" min="1" required style="background-color: #2b3035; border: 1px solid #495057;">
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-secondary">Ukuran</label>
                                 <select name="ukuran" class="form-select text-white" style="background-color: #2b3035; border: 1px solid #495057;">

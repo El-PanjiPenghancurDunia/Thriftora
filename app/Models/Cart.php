@@ -14,7 +14,7 @@ class Cart extends Model
     protected $fillable = [
         'user_id',
         'product_id',
-        'jumlah'
+        'quantity'
     ];
 
     // Relasi: Cart menyimpan 1 Produk

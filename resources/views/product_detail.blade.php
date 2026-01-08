@@ -37,6 +37,12 @@
                             <small class="text-secondary text-uppercase">Ukuran</small>
                             <h5 class="fw-bold">{{ $product->ukuran }}</h5>
                         </div>
+                        <div class="col-6">
+                            <small class="text-secondary text-uppercase">Tersedia</small>
+                            <h5 class="fw-bold {{ $product->stok <= 5 ? 'text-danger' : 'text-success' }}">
+                                {{ $product->stok }} Item
+                            </h5>
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -54,7 +60,7 @@
                             </form>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="btn btn-outline-light w-100 py-3">Login untuk Membeli</a>
+                        <button class="btn btn-danger w-100 py-3 fw-bold" disabled>MAAF, STOK HABIS</button>
                     @endauth
                 </div>
             </div>

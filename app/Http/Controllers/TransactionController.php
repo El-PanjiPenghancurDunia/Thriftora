@@ -74,6 +74,7 @@ class TransactionController extends Controller
             Transaction::create([
                 'user_id' => Auth::id(),
                 'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
                 'total_harga' => $item->product->harga + ($ongkir / $carts->count()), 
                 'tanggal_transaksi' => now(),
                 'status' => 'Menunggu Pembayaran',
@@ -83,8 +84,7 @@ class TransactionController extends Controller
                 'payment_status' => 'pending'
             ]);
             
-            // Kurangi Stok
-            $item->product->update(['stok' => 0]);
+           
         }
 
         // Hapus Keranjang
@@ -105,18 +105,29 @@ class TransactionController extends Controller
     }
 
     // 5. Pembayaran Palsu Sukses
-    public function fakePaymentSuccess(Request $request)
-    {
-        $trx = Transaction::where('snap_token', $request->snap_token)->first();
-        if ($trx) {
-            $trx->update([
-                'status' => 'Dibayar',
-                'payment_status' => 'settlement'
-            ]);
-            return response()->json(['success' => true]);
+public function fakePaymentSuccess(Request $request)
+{
+    // Ambil semua transaksi dengan token yang sama
+    $transactions = Transaction::where('snap_token', $request->snap_token)->get();
+
+    if ($transactions->count() > 0) {
+        foreach ($transactions as $trx) {
+            if ($trx->status == 'Menunggu Pembayaran') {
+                // 1. Update status transaksi
+                $trx->update(['status' => 'Dibayar']);
+
+                // 2. Kurangi stok produk sesuai quantity yang dibeli
+                $product = $trx->product;
+                if ($product->stok >= $trx->quantity) {
+                    $product->decrement('stok', $trx->quantity);
+                }
+            }
         }
-        return response()->json(['success' => false], 404);
+        return response()->json(['success' => true]);
     }
+
+    return response()->json(['success' => false], 404);
+}
 
     // ... fungsi lainnya ...
 

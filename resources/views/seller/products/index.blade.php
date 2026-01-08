@@ -23,7 +23,7 @@
                             <th class="ps-4 py-3">Foto</th>
                             <th class="py-3">Nama Produk</th>
                             <th class="py-3">Harga</th>
-                            <th class="py-3">Kondisi</th>
+                            <th class="py-3 text-center">Stok</th> <th class="py-3">Kondisi</th>
                             <th class="py-3 text-end pe-4">Aksi</th>
                         </tr>
                     </thead>
@@ -42,10 +42,15 @@
                                 <small class="text-secondary">Ukuran: {{ $product->ukuran }}</small>
                             </td>
                             <td>Rp {{ number_format($product->harga) }}</td>
+                            <td class="text-center">
+                                <span class="badge {{ $product->stok == 0 ? 'bg-danger' : 'bg-dark border border-secondary' }}">
+                                    {{ $product->stok }}
+                                </span>
+                            </td>
                             <td>
                                 <span class="badge bg-secondary text-dark">{{ $product->kondisi }}</span>
                             </td>
-                            <td class="text-end pe-4">
+                            <td class="text-end ">
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ route('seller.products.edit', $product->id) }}" class="btn btn-sm btn-outline-warning">
                                         <i class="bi bi-pencil-square"></i>

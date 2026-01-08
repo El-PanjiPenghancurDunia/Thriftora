@@ -24,6 +24,10 @@
                                 <input type="number" name="harga" class="form-control text-white" value="{{ old('harga', $product->harga) }}" required style="background-color: #2b3035; border: 1px solid #495057;">
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label text-secondary">Jumlah Stok</label>
+                                <input type="number" name="stok" class="form-control text-white" value="{{ old('stok', $product->stok) }}" min="0" required style="background-color: #2b3035; border: 1px solid #495057;">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label text-secondary">Ukuran</label>
                                 <select name="ukuran" class="form-select text-white" style="background-color: #2b3035; border: 1px solid #495057;">
                                     <option {{ $product->ukuran == 'S' ? 'selected' : '' }}>S</option> 

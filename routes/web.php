@@ -65,11 +65,12 @@ Route::middleware(['auth', 'role:pembeli'])->group(function () {
     Route::get('/my-orders/{id}', [TransactionController::class, 'show'])->name('pembeli.orders.show');
     
     // Profil & Review
-    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::post('/my-orders/{id}/complete', [App\Http\Controllers\ProfileController::class, 'completeOrder'])->name('orders.complete');
     Route::post('/products/{id}/review', [App\Http\Controllers\ProfileController::class, 'submitReview'])->name('products.review');
 });
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
 
 // --- JURUS DARURAT 1: RESET TRANSAKSI ---
 Route::get('/fix-database-now', function () {
@@ -128,6 +129,51 @@ Route::get('/fix-reviews-table', function () {
         });
 
         return "SUKSES! Tabel reviews berhasil dibuat ulang dengan kolom user_id.";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+Route::get('/emergency/add-quantity', function () {
+    try {
+        // Tambah quantity ke tabel keranjang
+        if (!Schema::hasColumn('carts', 'quantity')) {
+            Schema::table('carts', function (Blueprint $table) {
+                $table->integer('quantity')->default(1)->after('product_id');
+            });
+        }
+        // Tambah quantity ke tabel transaksi (penting untuk histori & stok)
+        if (!Schema::hasColumn('transactions', 'quantity')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->integer('quantity')->default(1)->after('product_id');
+            });
+        }
+        return "BERHASIL! Kolom quantity sudah ditambahkan ke Carts dan Transactions.";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+// Tambahkan sementara di web.php jika belum ada
+Route::get('/emergency/fix-cart-column', function () {
+    try {
+        // Jika ada kolom 'jumlah', kita ubah jadi 'quantity'
+        if (Schema::hasColumn('carts', 'jumlah')) {
+            Schema::table('carts', function (Illuminate\Database\Schema\Blueprint $table) {
+                $table->renameColumn('jumlah', 'quantity');
+            });
+            return "BERHASIL! Nama kolom 'jumlah' sudah diubah menjadi 'quantity'.";
+        }
+        
+        // Jika belum ada kolom quantity sama sekali, buat baru
+        if (!Schema::hasColumn('carts', 'quantity')) {
+            Schema::table('carts', function (Illuminate\Database\Schema\Blueprint $table) {
+                $table->integer('quantity')->default(1)->after('product_id');
+            });
+            return "BERHASIL! Kolom 'quantity' telah ditambahkan.";
+        }
+
+        return "Database sudah OK. Kolom 'quantity' sudah tersedia.";
     } catch (\Exception $e) {
         return "Error: " . $e->getMessage();
     }

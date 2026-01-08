@@ -23,6 +23,9 @@
     @if(session('success'))
         <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+        <div class="alert alert-danger border-0 shadow-sm">{{ session('error') }}</div>
+    @endif
 
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-2">
         <h3 class="fw-bold text-white mb-0">
@@ -59,6 +62,9 @@
                     
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-warning fw-bold fs-5">Rp {{ number_format($product->harga, 0, ',', '.') }}</span>
+                        <span class="badge {{ $product->stok > 0 ? 'bg-secondary' : 'bg-danger' }} opacity-75">
+                            Stok: {{ $product->stok }}
+                        </span>
                     </div>
 
                     <p class="card-text small text-secondary mb-3">
@@ -66,12 +72,20 @@
                     </p>
 
                     <div class="mt-auto">
-                        <form action="{{ route('cart.add', $product->id) }}" method="POST"> 
-                            @csrf
-                            <button type="submit" class="btn btn-outline-light w-100 hover-warning">
-                                <i class="bi bi-cart-plus"></i> + Keranjang
-                            </button>
-                        </form>
+                        @if($product->stok > 0)
+                            <form action="{{ route('cart.add', $product->id) }}" method="POST"> 
+                                @csrf
+                                <div class="input-group">
+                                    <input type="number" name="quantity" class="form-control bg-dark text-white border-secondary" 
+                                           value="1" min="1" max="{{ $product->stok }}" style="width: 60px;">
+                                    <button type="submit" class="btn btn-warning fw-bold px-3">
+                                        <i class="bi bi-cart-plus"></i> + Keranjang
+                                    </button>
+                                </div>
+                            </form>
+                        @else
+                            <button class="btn btn-danger w-100" disabled>Stok Habis</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -86,12 +100,27 @@
 </div>
 
 <style>
-    body{
+    body {
         background-color: #1a1a1a;
     }
     /* Efek Hover Card */
-    .hover-effect { transition: transform 0.3s, border-color 0.3s; }
-    .hover-effect:hover { transform: translateY(-5px); border-color: #ffc107 !important; }
-    .hover-warning:hover { background-color: #ffc107; color: black; border-color: #ffc107; }
+    .hover-effect { 
+        transition: transform 0.3s, border-color 0.3s; 
+        text-decoration: none !important;
+    }
+    .hover-effect:hover { 
+        transform: translateY(-5px); 
+        border-color: #ffc107 !important; 
+    }
+    .hover-warning:hover { 
+        background-color: #ffc107; 
+        color: black; 
+        border-color: #ffc107; 
+    }
+    /* Style input number agar seragam dark */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        opacity: 1;
+    }
 </style>
 @endsection

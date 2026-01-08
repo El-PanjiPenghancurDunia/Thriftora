@@ -122,63 +122,46 @@
 
     <section class="py-5">
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-5 border-bottom border-secondary pb-3">
-                <h2 class="fw-bold text-white">Etalase Produk</h2>
-                @if(request('search'))
-                    <span class="text-warning">Hasil pencarian: "{{ request('search') }}"</span>
-                @else
-                    <span class="text-warning">Fresh Drop <i class="bi bi-fire text-danger"></i></span>
-                @endif
-            </div>
-
+            <h2 class="fw-bold text-white mb-5 border-bottom border-secondary pb-3 text-uppercase">Etalase Produk</h2>
             <div class="row g-4">
                 @forelse($products as $product)
                 <div class="col-md-3 col-6"> 
                     <div class="card h-100 bg-dark text-white border-secondary shadow-sm hover-effect">
-                    <a href="{{ route('product.detail', $product->id) }}" class="text-decoration-none">    
-                        <div style="height: 350px; overflow: hidden;" class="position-relative">
-                                @if($product->gambar)
-                                    <img src="{{ asset('storage/' . $product->gambar) }}" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="{{ $product->nama_produk }}">
-                                @else
-                                    <img src="https://via.placeholder.com/300x400?text=No+Image" class="card-img-top w-100 h-100" style="object-fit: cover;">
-                                @endif
+                        <a href="{{ route('product.detail', $product->id) }}">
+                            <div style="height: 350px; overflow: hidden;" class="position-relative">
+                                <img src="{{ asset('storage/' . $product->gambar) }}" class="card-img-top w-100 h-100" style="object-fit: cover;">
                                 <span class="position-absolute top-0 end-0 badge bg-warning text-dark m-2 shadow">{{ $product->ukuran }}</span>
-                        </div>
-                    </a>
-
+                            </div>
+                        </a>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-truncate fw-bold">{{ $product->nama_produk }}</h5>
-                            
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-warning fw-bold fs-5">Rp {{ number_format($product->harga, 0, ',', '.') }}</span>
+                                <span class="text-warning fw-bold fs-5">Rp {{ number_format($product->harga) }}</span>
+                                <span class="badge bg-secondary opacity-75">Stok: {{ $product->stok }}</span>
                             </div>
 
-                            <p class="card-text small text-secondary mb-3">
-                                <i class="bi bi-tag-fill me-1"></i> {{ $product->kondisi }}
-                            </p>
-
                             <div class="mt-auto">
-                                @auth
-                                    <form action="{{ route('cart.add', $product->id) }}" method="POST"> 
-                                        @csrf
-                                        <button type="submit" class="btn btn-outline-light w-100 hover-warning">
-                                            <i class="bi bi-cart-plus"></i> + Keranjang
-                                        </button>
-                                    </form>
+                                @if($product->stok > 0)
+                                    @auth
+                                        <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                                            @csrf
+                                            <div class="input-group">
+                                                <input type="number" name="quantity" class="form-control bg-dark text-white border-secondary" value="1" min="1" max="{{ $product->stok }}">
+                                                <button class="btn btn-warning fw-bold px-3" type="submit"><i class="bi bi-cart-plus"></i></button>
+                                            </div>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('login') }}" class="btn btn-outline-light w-100">Login untuk Beli</a>
+                                    @endauth
                                 @else
-                                    <a href="{{ route('login') }}" class="btn btn-outline-light w-100 hover-warning">
-                                        <i class="bi bi-box-arrow-in-right"></i> Login untuk Beli
-                                    </a>
-                                @endauth
+                                    <button class="btn btn-danger w-100" disabled>Habis Terjual</button>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
                 @empty
-                <div class="col-12 text-center py-5">
-                    <h4 class="text-muted">Tidak ada produk ditemukan.</h4>
-                    <a href="{{ url('/') }}" class="btn btn-outline-warning mt-3">Reset Pencarian</a>
-                </div>
+                <div class="col-12 text-center py-5 text-muted">Produk tidak ditemukan.</div>
                 @endforelse
             </div>
         </div>

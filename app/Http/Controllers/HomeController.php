@@ -31,6 +31,7 @@ class HomeController extends Controller
 
             $products = $query->latest()->get();
             
+            
             return view('home', compact('products')); 
         }
     }

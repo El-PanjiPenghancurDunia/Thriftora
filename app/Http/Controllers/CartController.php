@@ -10,41 +10,54 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     // 1. Tampilkan Isi Keranjang
-    public function index()
-    {
-        // Ambil data keranjang milik user yang login, beserta data produknya
-        $carts = Cart::with('product')->where('user_id', Auth::id())->get();
-        
-        // Hitung total bayar
-        $total = $carts->sum(function($item) {
-            return $item->product->harga * $item->jumlah;
-        });
+public function index()
+{
+    $carts = Cart::with('product')->where('user_id', Auth::id())->get();
 
-        return view('cart.index', compact('carts', 'total'));
-    }
+    // Hitung total: Harga Produk dikali Jumlah (Quantity)
+    $total = $carts->sum(function($item) {
+        return $item->product->harga * $item->quantity;
+    });
+
+    return view('cart.index', compact('carts', 'total'));
+}
 
     // 2. Tambah Barang ke Keranjang
-    public function store(Request $request, $productId)
-    {
-        // Cek apakah barang sudah ada di keranjang user ini?
-        $existingCart = Cart::where('user_id', Auth::id())
-                            ->where('product_id', $productId)
-                            ->first();
+    public function store(Request $request, $id)
+{
+    $product = Product::findOrFail($id);
+    
+    // Ambil jumlah dari input, jika tidak ada default 1
+    $qty = $request->input('quantity', 1);
 
-        if ($existingCart) {
-            // Jika sudah ada, jangan ditambah (karena Thrift stoknya cuma 1)
-            return redirect()->back()->with('error', 'Barang ini sudah ada di keranjangmu!');
-        }
-
-        // Simpan ke database
-        Cart::create([
-            'user_id' => Auth::id(),
-            'product_id' => $productId,
-            'jumlah' => 1 // Default 1 karena barang thrift unik
-        ]);
-
-        return redirect()->route('cart.index')->with('success', 'Berhasil masuk keranjang!');
+    // Validasi Stok
+    if ($product->stok < $qty) {
+        return redirect()->back()->with('error', 'Stok tidak mencukupi!');
     }
+
+    // Cek apakah barang sudah ada di keranjang user
+    $cartItem = \App\Models\Cart::where('user_id', Auth::id())
+                                ->where('product_id', $id)
+                                ->first();
+
+    if ($cartItem) {
+        // Jika sudah ada, tambahkan jumlahnya
+        $newQty = $cartItem->quantity + $qty;
+        if ($newQty > $product->stok) {
+            return redirect()->back()->with('error', 'Total di keranjang melebihi stok!');
+        }
+        $cartItem->update(['quantity' => $newQty]);
+    } else {
+        // Jika belum ada, buat baru
+        \App\Models\Cart::create([
+            'user_id' => Auth::id(),
+            'product_id' => $id,
+            'quantity' => $qty,
+        ]);
+    }
+
+    return redirect()->route('cart.index')->with('success', 'Berhasil ditambahkan ke keranjang!');
+}
 
     // 3. Hapus Barang dari Keranjang
     public function destroy($id)
